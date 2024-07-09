@@ -1,6 +1,7 @@
 from PyQt6.QtCore import Qt, QSize, pyqtSignal
 from PyQt6.QtGui import QPainter, QBrush, QColor, QPaintEvent, QMouseEvent
-from PyQt6.QtWidgets import QAbstractButton, QApplication, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QAbstractButton
+
 
 class ToggleSwitch(QAbstractButton):
     statusChanged = pyqtSignal(bool)
@@ -13,7 +14,7 @@ class ToggleSwitch(QAbstractButton):
         self.setBrush(brush)
         self.setMinimumSize(40, 25)  # Set a minimum size for the toggle switch
 
-    def getStatus(self):
+    def getstatus(self):
         return self.m_status
 
     def setBrush(self, brush):

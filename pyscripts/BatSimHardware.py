@@ -6,8 +6,13 @@ class BatSimHw:
         print("Hardware battery simulator, only simulated")
         self.external_load_mA = 100
 
-    def measure_ibatt_mA(self):
+    def measure_ibatt_ma(self):
         return self.external_load_mA
 
-    def set_ibatt_load_mA(self, load_mA):
+    def set_ibatt_load_ma(self, load_mA):
         self.external_load_mA = load_mA
+
+    def set_vbatt_mv(self, vbatt_mv):
+        # Set the output voltage on the hardware power supply
+        vbatt_mv = 0
+

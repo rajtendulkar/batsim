@@ -1,17 +1,13 @@
-import sys
+
 import math
 
 from PyQt6.QtCore import QTimer
-from PyQt6.QtCore import QSize
-from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QApplication, QPushButton, QVBoxLayout, QWidget
 from battery_simulator import Ui_MainWindow
-from PyQt6 import QtCore, QtGui, QtWidgets
-from PyQt6.QtWidgets import QMainWindow, QApplication
+from PyQt6 import QtCore
 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6.QtCharts import QChart, QChartView, QLineSeries, QValueAxis
-from PyQt6.QtGui import QPainter, QColor, QBrush
+from PyQt6.QtGui import QPainter, QColor
 from PyQt6.QtCore import QPointF, QMargins, Qt
 from batteryLogic import BatSimCore
 from ToggleSwitch import ToggleSwitch
@@ -25,13 +21,12 @@ class BatSimGui(QMainWindow):
 
         self.timer = QTimer()
         self.timer.setInterval(1000)
-        self.timer.timeout.connect(self.graphUpdateTimerExpired)
+        self.timer.timeout.connect(self.graph_update_timer_expired)
 
-        self.chart_view = None
-        self.batsimCore = BatSimCore(self)
+        self.ocv_chart_view = None
+        self.batsim_core = BatSimCore(self)
         self.ui.battParamsPushButton.clicked.connect(self.batt_params_update_button_clicked)
         self.ui.battParamsCheckBox.stateChanged.connect(self.batt_params_enable_checkbox)
-        #self.ui.externalLoadCheckBox.clicked.connect(self.externalLoadControl)
         # enable custom window hint
         self.setWindowFlags(self.windowFlags() | Qt.WindowType.CustomizeWindowHint)
         # disable (but not hide) close button
@@ -65,9 +60,9 @@ class BatSimGui(QMainWindow):
             """
         )
 
-        self.batSimToggle = ToggleSwitch(parent=self)
-        self.ui.verticalLayout.addWidget(self.batSimToggle)
-        self.batSimToggle.statusChanged.connect(self.on_status_changed)
+        self.batsim_toggle_switch = ToggleSwitch(parent=self)
+        self.ui.verticalLayout.addWidget(self.batsim_toggle_switch)
+        self.batsim_toggle_switch.statusChanged.connect(self.on_status_changed)
 
         # Data stored to display graphs
         self.time_data = []
@@ -77,36 +72,36 @@ class BatSimGui(QMainWindow):
         self.draw_ocv_graph()
         self.draw_vocv_graph()
         self.draw_soc_change_graph()
-        self.update_bastsim_data(0, 0, 0, 0, 0, 0, 0, 0, 0)
+        self.update_batsim_data(0, 0, 0, 0, 0, 0, 0, 0, 0)
 
-    def externalLoadControl(self):
+    def external_load_control(self):
         if self.ui.externalLoadCheckBox.isEnabled():
-            self.batsimCore.enable_external_load(self.ui.externalLoadDoubleSpinBox.value())
+            self.batsim_core.enable_external_load(self.ui.externalLoadDoubleSpinBox.value())
         else:
-            self.batsimCore.enable_external_load(self.ui.externalLoadDoubleSpinBox.value())
+            self.batsim_core.enable_external_load(self.ui.externalLoadDoubleSpinBox.value())
 
-    def graphUpdateTimerExpired(self):
+    def graph_update_timer_expired(self):
         self.update_vocv_graph()
         self.update_soc_graph()
 
     def on_status_changed(self, status):
         print(f'Toggle switch status: {"On" if status else "Off"}')
-        if self.batSimToggle.getStatus():
+        if self.batsim_toggle_switch.getstatus():
             print('Start Batsim')
-            self.batsimCore.start()
+            self.batsim_core.start()
             self.timer.start()
         else:
             print('Stop Batsim')
-            self.batsimCore.stop()
+            self.batsim_core.stop()
             self.timer.stop()
 
             # Clear data stored to display graphs
             self.time_data = []
             self.soc_change_data = []
             self.vocv_data = []
-            self.update_bastsim_data(0, 0, 0, 0, 0, 0, 0, 0, 0)
+            self.update_batsim_data(0, 0, 0, 0, 0, 0, 0, 0, 0)
 
-    def update_bastsim_data(self, time_delta_seconds, vocv_mv, vbatt_mv, ibat_ma, vr_mv, vr1c1_mv, vr2c2_mv, batt_cap_mah, batt_cap_percent):
+    def update_batsim_data(self, time_delta_seconds, vocv_mv, vbatt_mv, ibat_ma, vr_mv, vr1c1_mv, vr2c2_mv, batt_cap_mah, batt_cap_percent):
         self.ui.vocvLineEdit.setText(str(f"{vocv_mv:.2f}"))
         self.ui.vbattLineEdit.setText(str(f"{vbatt_mv:.2f}"))
         self.ui.ibattLineEdit.setText(str(f"{ibat_ma:.2f}"))
@@ -152,11 +147,11 @@ class BatSimGui(QMainWindow):
         self.soc_change_chart.layout().setContentsMargins(0, 0, 0, 0)
         self.soc_change_chart.legend().hide()
 
-        self.socChartAxisX = QValueAxis()
-        self.socChartAxisX.setRange(0, 10)
-        self.socChartAxisX.setLabelFormat("%d")
-        self.socChartAxisX.setTickCount(1)
-        self.socChartAxisX.setTitleText("Time (s)")
+        self.socChartocv_axis_x = QValueAxis()
+        self.socChartocv_axis_x.setRange(0, 10)
+        self.socChartocv_axis_x.setLabelFormat("%d")
+        self.socChartocv_axis_x.setTickCount(1)
+        self.socChartocv_axis_x.setTitleText("Time (s)")
 
         self.socChartAxisY = QValueAxis()
         self.socChartAxisY.setRange(0, 100)
@@ -164,7 +159,7 @@ class BatSimGui(QMainWindow):
         self.socChartAxisY.setTickCount(5)
         self.socChartAxisY.setTitleText("SoC (%)")
 
-        self.soc_change_chart.addAxis(self.socChartAxisX, QtCore.Qt.AlignmentFlag.AlignBottom)
+        self.soc_change_chart.addAxis(self.socChartocv_axis_x, QtCore.Qt.AlignmentFlag.AlignBottom)
         self.soc_change_chart.addAxis(self.socChartAxisY, QtCore.Qt.AlignmentFlag.AlignLeft)
 
         self.soc_change_chart_view = QChartView(self.soc_change_chart)
@@ -174,87 +169,87 @@ class BatSimGui(QMainWindow):
         self.soc_change_chart_view.update()
 
     def draw_ocv_graph(self):
-        self.ocvChart = QChart()
-        self.ocvChart.setTitle("")
-        self.ocvseries = QLineSeries()
-        self.ocvseries.setName("")
+        self.ocv_graph = QChart()
+        self.ocv_graph.setTitle("")
+        self.ocv_graph_series = QLineSeries()
+        self.ocv_graph_series.setName("")
 
-        self.ocvChart.setTheme(QChart.ChartTheme.ChartThemeDark)
-        self.ocvChart.addSeries(self.ocvseries)
+        self.ocv_graph.setTheme(QChart.ChartTheme.ChartThemeDark)
+        self.ocv_graph.addSeries(self.ocv_graph_series)
 
-        self.ocvChart.setMargins(QMargins(0, 0, 0, 0))
-        self.ocvChart.layout().setContentsMargins(0, 0, 0, 0)
-        self.ocvChart.legend().hide()
+        self.ocv_graph.setMargins(QMargins(0, 0, 0, 0))
+        self.ocv_graph.layout().setContentsMargins(0, 0, 0, 0)
+        self.ocv_graph.legend().hide()
 
-        axisX = QValueAxis()
-        axisX.setRange(0, 100)
-        axisX.setLabelFormat("%d")
-        axisX.setTickCount(10)
-        axisX.setTitleText("State of Charge (%)")
+        ocv_axis_x = QValueAxis()
+        ocv_axis_x.setRange(0, 100)
+        ocv_axis_x.setLabelFormat("%d")
+        ocv_axis_x.setTickCount(10)
+        ocv_axis_x.setTitleText("State of Charge (%)")
 
-        self.ocvChartAxisY = QValueAxis()
-        self.ocvChartAxisY.setRange(0, 100)
-        self.ocvChartAxisY.setLabelFormat("%d")
-        self.ocvChartAxisY.setTickCount(8)
-        self.ocvChartAxisY.setTitleText("Vbatt (mV)")
+        self.ocv_axis_y = QValueAxis()
+        self.ocv_axis_y.setRange(0, 100)
+        self.ocv_axis_y.setLabelFormat("%d")
+        self.ocv_axis_y.setTickCount(8)
+        self.ocv_axis_y.setTitleText("Vbatt (mV)")
 
-        self.ocvChart.addAxis(axisX, QtCore.Qt.AlignmentFlag.AlignBottom)
-        self.ocvChart.addAxis(self.ocvChartAxisY, QtCore.Qt.AlignmentFlag.AlignLeft)
+        self.ocv_graph.addAxis(ocv_axis_x, QtCore.Qt.AlignmentFlag.AlignBottom)
+        self.ocv_graph.addAxis(self.ocv_axis_y, QtCore.Qt.AlignmentFlag.AlignLeft)
 
-        self.chart_view = QChartView(self.ocvChart)
-        self.chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self.ocv_chart_view = QChartView(self.ocv_graph)
+        self.ocv_chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        self.ui.verticalLayout_2.addWidget(self.chart_view)
+        self.ui.verticalLayout_2.addWidget(self.ocv_chart_view)
 
     def draw_vocv_graph(self):
-        self.vocvChart = QChart()
-        self.vocvChart.setTitle("")
-        self.vocvseries = QLineSeries()
-        self.vocvseries.setName("")
+        self.vocv_graph = QChart()
+        self.vocv_graph.setTitle("")
+        self.vocv_graph_series = QLineSeries()
+        self.vocv_graph_series.setName("")
 
-        self.vocvChart.setTheme(QChart.ChartTheme.ChartThemeDark)
-        self.vocvChart.addSeries(self.vocvseries)
+        self.vocv_graph.setTheme(QChart.ChartTheme.ChartThemeDark)
+        self.vocv_graph.addSeries(self.vocv_graph_series)
 
-        self.vocvChart.setMargins(QMargins(0, 0, 0, 0))
-        self.vocvChart.layout().setContentsMargins(0, 0, 0, 0)
-        self.vocvChart.legend().hide()
+        self.vocv_graph.setMargins(QMargins(0, 0, 0, 0))
+        self.vocv_graph.layout().setContentsMargins(0, 0, 0, 0)
+        self.vocv_graph.legend().hide()
 
-        self.vocvAxisX = QValueAxis()
-        self.vocvAxisX.setRange(0, 100)
-        self.vocvAxisX.setLabelFormat("%d")
-        self.vocvAxisX.setTickCount(8)
-        self.vocvAxisX.setTitleText("Time (s)")
+        self.vocvocv_axis_x = QValueAxis()
+        self.vocvocv_axis_x.setRange(0, 100)
+        self.vocvocv_axis_x.setLabelFormat("%d")
+        self.vocvocv_axis_x.setTickCount(8)
+        self.vocvocv_axis_x.setTitleText("Time (s)")
 
-        self.vocvChartAxisY = QValueAxis()
-        self.vocvChartAxisY.setRange(0, 100)
-        self.vocvChartAxisY.setLabelFormat("%d")
-        self.vocvChartAxisY.setTickCount(5)
-        self.vocvChartAxisY.setTitleText("Vocv (mV)")
+        self.vocv_axis_y = QValueAxis()
+        self.vocv_axis_y.setRange(0, 100)
+        self.vocv_axis_y.setLabelFormat("%d")
+        self.vocv_axis_y.setTickCount(5)
+        self.vocv_axis_y.setTitleText("Vocv (mV)")
 
-        self.vocvChart.addAxis(self.vocvAxisX, QtCore.Qt.AlignmentFlag.AlignBottom)
-        self.vocvChart.addAxis(self.vocvChartAxisY, QtCore.Qt.AlignmentFlag.AlignLeft)
+        self.vocv_graph.addAxis(self.vocvocv_axis_x, QtCore.Qt.AlignmentFlag.AlignBottom)
+        self.vocv_graph.addAxis(self.vocv_axis_y, QtCore.Qt.AlignmentFlag.AlignLeft)
 
-        self.vocv_chart_view = QChartView(self.vocvChart)
+        self.vocv_chart_view = QChartView(self.vocv_graph)
         self.vocv_chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         self.ui.verticalLayout_3.addWidget(self.vocv_chart_view)
 
     def update_vocv_graph(self):
-        self.vocvseries.clear()
+        self.vocv_graph_series.clear()
 
         for i in range(len(self.time_data)):
-            self.vocvseries.append(QPointF(self.time_data[i], self.vocv_data[i]))
+            self.vocv_graph_series.append(QPointF(self.time_data[i], self.vocv_data[i]))
 
-        self.vocvAxisX.setRange(min(self.time_data), max(self.time_data))
+        self.vocvocv_axis_x.setRange(min(self.time_data), max(self.time_data))
 
         if len(self.vocv_data) > 1:
             min_ocv = sorted(self.vocv_data)[1]
         else:
             min_ocv = min(self.vocv_data)
 
-        self.vocvChartAxisY.setRange(min_ocv, max(self.vocv_data))
-        self.vocvChart.removeSeries(self.vocvseries)
-        self.vocvChart.addSeries(self.vocvseries)
+        self.vocv_axis_y.setRange(min_ocv, max(self.vocv_data))
+        self.vocv_graph.removeSeries(self.vocv_graph_series)
+        self.vocv_graph.addSeries(self.vocv_graph_series)
         self.vocv_chart_view.update()
 
     def update_soc_graph(self):
@@ -263,22 +258,22 @@ class BatSimGui(QMainWindow):
         for i in range(len(self.time_data)):
             self.soc_change_series.append(QPointF(self.time_data[i], self.soc_change_data[i]))
 
-        self.socChartAxisX.setRange(min(self.time_data), max(self.time_data))
+        self.socChartocv_axis_x.setRange(min(self.time_data), max(self.time_data))
         self.socChartAxisY.setRange(min(self.soc_change_data), max(self.soc_change_data))
         self.soc_change_chart.removeSeries(self.soc_change_series)
         self.soc_change_chart.addSeries(self.soc_change_series)
         self.soc_change_chart_view.update()
 
     def update_ocv_graph(self, ocvTable):
-        self.ocvseries.clear()
+        self.ocv_graph_series.clear()
 
         for i in range(len(ocvTable)):
-            self.ocvseries.append(QPointF(i, ocvTable[i]))
+            self.ocv_graph_series.append(QPointF(i, ocvTable[i]))
 
-        self.ocvChartAxisY.setRange(min(ocvTable), max(ocvTable))
-        self.ocvChart.removeSeries(self.ocvseries)
-        self.ocvChart.addSeries(self.ocvseries)
-        self.chart_view.update()
+        self.ocv_axis_y.setRange(min(ocvTable), max(ocvTable))
+        self.ocv_graph.removeSeries(self.ocv_graph_series)
+        self.ocv_graph.addSeries(self.ocv_graph_series)
+        self.ocv_chart_view.update()
 
     def parseOcvTable(self):
         ocv_input_str = self.ui.ocvTableTextEdit.toPlainText()
@@ -313,8 +308,8 @@ class BatSimGui(QMainWindow):
             black_color = QColor(0, 0, 0)
             self.ui.ocvTableTextEdit.setStyleSheet("QTextEdit { background-color: #FFFFFF; color: #000000; }")
 
-        self.batsimCore.updateRcParams(rc_enabled, r_mohms, r1_mohms, r2_mohms, c1_F, c2_F,
-                                       battery_initial_capacity_percent, battery_capacity_mAh, ocv_table)
+        self.batsim_core.update_rc_params(rc_enabled, r_mohms, r1_mohms, r2_mohms, c1_F, c2_F,
+                                         battery_initial_capacity_percent, battery_capacity_mAh, ocv_table)
 
         self.ui.battStatusProgressBar.setValue(battery_initial_capacity_percent)
 
